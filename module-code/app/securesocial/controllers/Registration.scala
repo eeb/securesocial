@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
-  * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,14 +22,14 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.Messages
 import play.api.mvc.Action
-import play.filters.csrf.{CSRFCheck, _}
+import play.filters.csrf.{ CSRFCheck, _ }
 import securesocial.core._
 import securesocial.core.authenticator.CookieAuthenticator
 import securesocial.core.providers.UsernamePasswordProvider
 import securesocial.core.providers.utils._
 import securesocial.core.services.SaveMode
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 /**
  * A default Registration controller that uses the BasicProfile as the user type
@@ -141,7 +141,7 @@ trait BaseRegistration extends MailTokenBasedOperations {
 
   /**
    * Renders the sign up page
-    *
+   *
    * @return
    */
   def signUp(token: String) = CSRFAddToken {

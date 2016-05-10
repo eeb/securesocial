@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
-  * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.i18n.Messages
-import play.api.mvc.{RequestHeader, Result}
+import play.api.mvc.{ RequestHeader, Result }
 import securesocial.core.SecureSocial
 import securesocial.core.providers.MailToken
 
@@ -52,7 +52,7 @@ abstract class MailTokenBasedOperations extends SecureSocial {
   /**
    * Creates a token for mail based operations
    *
-    * @param email   the email address
+   * @param email   the email address
    * @param isSignUp a boolean indicating if the token is used for a signup or password reset operation
    * @return a MailToken instance
    */
@@ -68,14 +68,14 @@ abstract class MailTokenBasedOperations extends SecureSocial {
    * Helper method to execute actions where a token needs to be retrieved from
    * the backing store
    *
-    * @param token   the token id
+   * @param token   the token id
    * @param isSignUp a boolean indicating if the token is used for a signup or password reset operation
-    * @param f       the function that gets invoked if the token exists
-    * @param request the current request
+   * @param f       the function that gets invoked if the token exists
+   * @param request the current request
    * @return the action result
    */
   protected def executeForToken(token: String, isSignUp: Boolean,
-                                f: MailToken => Future[Result])(implicit request: RequestHeader): Future[Result] = {
+    f: MailToken => Future[Result])(implicit request: RequestHeader): Future[Result] = {
     env.userService.findToken(token).flatMap {
       case Some(t) if !t.isExpired && t.isSignUp == isSignUp => f(t)
       case _ =>

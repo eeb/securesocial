@@ -39,7 +39,7 @@ class ProviderController @Inject() (override implicit val env: RuntimeEnvironmen
  */
 trait BaseProviderController extends SecureSocial {
 
-  import securesocial.controllers.ProviderControllerHelper.{logger, toUrl}
+  import securesocial.controllers.ProviderControllerHelper.{ logger, toUrl }
 
   /**
    * The authentication entry point for GET requests

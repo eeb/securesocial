@@ -24,12 +24,12 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc._
 import securesocial.controllers.ViewTemplates
-import securesocial.core.AuthenticationResult.{Authenticated, NavigationFlow}
+import securesocial.core.AuthenticationResult.{ Authenticated, NavigationFlow }
 import securesocial.core._
 import securesocial.core.providers.utils.PasswordHasher
-import securesocial.core.services.{AvatarService, UserService}
+import securesocial.core.services.{ AvatarService, UserService }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * A username password provider

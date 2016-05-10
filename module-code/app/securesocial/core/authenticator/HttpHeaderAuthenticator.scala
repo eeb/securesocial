@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import org.joda.time.DateTime
 import play.api.Application
-import play.api.mvc.{Result, _}
+import play.api.mvc.{ Result, _ }
 
 import scala.concurrent.Future
 

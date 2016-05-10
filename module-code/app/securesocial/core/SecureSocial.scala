@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
-  * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,13 +22,13 @@ import play.api.Application
 import play.api.http.HeaderNames
 import play.api.i18n.Messages
 import play.api.libs.json.Json
-import play.api.mvc.{Result, _}
+import play.api.mvc.{ Result, _ }
 import play.twirl.api.Html
-import securesocial.core.SecureSocial.{RequestWithUser, SecuredRequest}
+import securesocial.core.SecureSocial.{ RequestWithUser, SecuredRequest }
 import securesocial.core.authenticator._
 import securesocial.core.utils._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * Provides the actions that can be used to protect controllers and retrieve the current user
@@ -82,7 +82,7 @@ trait SecureSocial extends Controller {
 
     /**
      * Creates a secured action
-      *
+     *
      * @param authorize an Authorize object that checks if the user is authorized to invoke the action
      */
     def apply[A](authorize: Authorization[env.U]) = new SecuredActionBuilder(Some(authorize))
@@ -100,7 +100,7 @@ trait SecureSocial extends Controller {
     private val logger = play.api.Logger("securesocial.core.SecuredActionBuilder")
 
     def invokeSecuredBlock[A](authorize: Option[Authorization[env.U]], request: Request[A],
-                              block: SecuredRequest[A, env.U] => Future[Result]): Future[Result] = {
+      block: SecuredRequest[A, env.U] => Future[Result]): Future[Result] = {
       env.authenticatorService.fromRequest(request).flatMap {
         case Some(authenticator) if authenticator.isValid =>
           authenticator.touch.flatMap { updatedAuthenticator =>
@@ -115,7 +115,7 @@ trait SecureSocial extends Controller {
           }
         case Some(authenticator) if !authenticator.isValid =>
           logger.debug("[securesocial] user tried to access with invalid authenticator : '%s'".format(request.uri))
-          notAuthenticatedResult(request).flatMap {_.discardingAuthenticator(authenticator)}
+          notAuthenticatedResult(request).flatMap { _.discardingAuthenticator(authenticator) }
         case None =>
           logger.debug("[securesocial] anonymous user trying to access : '%s'".format(request.uri))
           notAuthenticatedResult(request)
@@ -123,7 +123,7 @@ trait SecureSocial extends Controller {
     }
 
     override def invokeBlock[A](request: Request[A],
-                                block: (SecuredRequest[A, env.U]) => Future[Result]): Future[Result] = {
+      block: (SecuredRequest[A, env.U]) => Future[Result]): Future[Result] = {
       invokeSecuredBlock(authorize, request, block)
     }
   }
@@ -142,7 +142,7 @@ trait SecureSocial extends Controller {
     override protected implicit def executionContext: ExecutionContext = env.executionContext
 
     override def invokeBlock[A](request: Request[A],
-                                block: (RequestWithUser[A, env.U]) => Future[Result]): Future[Result] = {
+      block: (RequestWithUser[A, env.U]) => Future[Result]): Future[Result] = {
       env.authenticatorService.fromRequest(request).flatMap {
         case Some(authenticator) if authenticator.isValid =>
           authenticator.touch.flatMap {
@@ -173,7 +173,7 @@ object SecureSocial {
 
   /**
    * Saves the referer as original url in the session if it's not yet set.
-    *
+   *
    * @param result the result that maybe enhanced with an updated session
    * @return the result that's returned to the client
    */
@@ -193,7 +193,7 @@ object SecureSocial {
 
   /**
    * Gets the referer URI from the implicit request
-    *
+   *
    * @return the path and query string of the referer path and query
    */
   def refererPathAndQuery[A](implicit request: Request[A]): Option[String] = {
@@ -219,7 +219,7 @@ object SecureSocial {
    * gives you will be enough.
    *
    * @param request the current request
-    * @param env    the current environment
+   * @param env    the current environment
    * @return a future with an option user
    */
   def currentUser(implicit request: RequestHeader, env: RuntimeEnvironment, executionContext: ExecutionContext): Future[Option[env.U]] = {

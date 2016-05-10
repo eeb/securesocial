@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
-  * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ package securesocial.core.services
 import javax.inject.Inject
 
 import play.api.Application
-import play.api.mvc.{Call, RequestHeader}
+import play.api.mvc.{ Call, RequestHeader }
 import securesocial.core.IdentityProvider
 
 /**
@@ -185,27 +185,27 @@ object RoutesService {
 
     /**
      * Loads the Favicon to use from configuration, using a default one if not provided
-      *
+     *
      * @return the path to Favicon file to use
      */
     override val faviconPath = valueFor(FaviconKey, DefaultFaviconPath)
 
     /**
      * Loads the Jquery file to use from configuration, using a default one if not provided
-      *
+     *
      * @return the path to Jquery file to use
      */
     override val jqueryPath = valueFor(JQueryKey, DefaultJqueryPath)
 
     /**
      * Loads the Bootstrap CSS file to use from configuration, using a default one if not provided
-      *
+     *
      * @return the path to Bootstrap CSS file to use
      */
     override val bootstrapCssPath = valueFor(BootstrapCssKey, DefaultBootstrapCssPath)
     /**
      * Loads the Custom Css file to use from configuration. If there is none define, none will be used
-      *
+     *
      * @return Option containing a custom css file or None
      */
     override val customCssPath: Option[Call] = {

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
-  * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,11 @@
 
 import controllers.CustomRoutesService
 import securesocial.core.RuntimeEnvironment
-import service.{DemoUser, InMemoryUserService, MyEventListener}
+import service.{ DemoUser, InMemoryUserService, MyEventListener }
 
 /**
-  * The runtime environment for this sample app.
-  */
+ * The runtime environment for this sample app.
+ */
 class MyRuntimeEnvironment extends RuntimeEnvironment.Default {
   type U = DemoUser
   override implicit val executionContext = play.api.libs.concurrent.Execution.defaultContext
@@ -31,15 +31,15 @@ class MyRuntimeEnvironment extends RuntimeEnvironment.Default {
 }
 
 /**
-  * An implementation that checks if the controller expects a RuntimeEnvironment and
-  * passes the instance to it if required.
-  *
-  * This can be replaced by any DI framework to inject it differently.
-  *
-  * @param controllerClass
-  * @tparam A
-  * @return
-  */
+ * An implementation that checks if the controller expects a RuntimeEnvironment and
+ * passes the instance to it if required.
+ *
+ * This can be replaced by any DI framework to inject it differently.
+ *
+ * @param controllerClass
+ * @tparam A
+ * @return
+ */
 /* def getControllerInstance[A](controllerClass: Class[A]): A = {
   val instance = controllerClass.getConstructors.find { c =>
     val params = c.getParameterTypes

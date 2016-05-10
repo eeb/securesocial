@@ -23,7 +23,7 @@ import javax.inject.Inject
 import play.api.libs.ws.WSClient
 import securesocial.core._
 import securesocial.core.providers.DropboxProvider._
-import securesocial.core.services.{CacheService, RoutesService}
+import securesocial.core.services.{ CacheService, RoutesService }
 
 import scala.concurrent.Future
 

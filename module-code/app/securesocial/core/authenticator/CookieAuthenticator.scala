@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
-  * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import org.joda.time.DateTime
 import play.api.Application
-import play.api.mvc.{Cookie, DiscardingCookie, RequestHeader, Result}
+import play.api.mvc.{ Cookie, DiscardingCookie, RequestHeader, Result }
 import securesocial.core.IdentityProvider
 
 import scala.concurrent.Future
@@ -30,12 +30,12 @@ import scala.concurrent.Future
  * users.  Since the cookie only has the id for this authenticator the rest of the data is stored using an
  * instance of the AuthenticatorStore.
  *
-  * @param id            the authenticator id
-  * @param user          the user this authenticator is associated with
+ * @param id            the authenticator id
+ * @param user          the user this authenticator is associated with
  * @param expirationDate the expiration date
-  * @param lastUsed      the last time the authenticator was used
-  * @param creationDate  the authenticator creation time
-  * @param store         the authenticator store where instances of this authenticator are persisted
+ * @param lastUsed      the last time the authenticator was used
+ * @param creationDate  the authenticator creation time
+ * @param store         the authenticator store where instances of this authenticator are persisted
  * @tparam U the user type (defined by the application using the module)
  * @see AuthenticatorStore
  * @see RuntimeEnvironment
@@ -125,7 +125,7 @@ case class CookieAuthenticator[U](id: String, user: U, expirationDate: DateTime,
 /**
  * An authenticator builder. It can create an Authenticator instance from an http request or from a user object
  *
-  * @param store    the store where instances of the CookieAuthenticator class are persisted.
+ * @param store    the store where instances of the CookieAuthenticator class are persisted.
  * @param generator a session id generator
  * @tparam U the user object type
  */

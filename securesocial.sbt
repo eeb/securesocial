@@ -5,6 +5,9 @@ version := Common.version
 scalaVersion := Common.scalaVersion
 
 lazy val core =  project.in( file("module-code") ).enablePlugins(PlayScala)
+  /*.settings(
+    routesGenerator := StaticRoutesGenerator
+  )*/
 
 lazy val scalaDemo = project.in( file("samples/scala/demo") ).enablePlugins(PlayScala).dependsOn(core)
 

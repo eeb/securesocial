@@ -6,12 +6,15 @@ scalaVersion := Common.scalaVersion
 
 scalariformSettings
 
+unmanagedBase := baseDirectory.value / "../module-code/target/scala-2.11/"
+
 libraryDependencies ++= Seq(
   specs2 % "test",
-  "ws.securesocial" %% "securesocial" % version.value,
+  //"ws.securesocial" %% "securesocial" % version.value,
   "net.codingwell" %% "scala-guice" % "4.0.0",
   "com.typesafe.play" %% "play-mailer" % "3.0.1"
 )
+
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

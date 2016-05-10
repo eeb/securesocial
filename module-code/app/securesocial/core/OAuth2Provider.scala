@@ -21,13 +21,13 @@ import _root_.java.util.UUID
 import javax.inject.Inject
 
 import play.api.Application
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import play.api.libs.json.{ JsError, JsSuccess, JsValue, Json }
 import play.api.libs.ws.WSResponse
 import play.api.mvc._
-import securesocial.core.services.{CacheService, HttpService, RoutesService}
+import securesocial.core.services.{ CacheService, HttpService, RoutesService }
 
 import scala.collection.JavaConversions._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait OAuth2Client {
   val settings: OAuth2Settings
@@ -167,7 +167,7 @@ abstract class OAuth2Provider(
 
   /**
    * Defines the request format for api authentication requests
-    *
+   *
    * @param email the user email
    * @param info the OAuth2Info as returned by some Oauth2 service on the client side (eg: JS app)
    */

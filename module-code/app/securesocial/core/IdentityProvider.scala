@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
-  * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +18,8 @@ package securesocial.core
 
 import javax.inject.Inject
 
-import play.api.mvc.{AnyContent, Request, Result}
-import play.api.{Application, Environment, Mode}
+import play.api.mvc.{ AnyContent, Request, Result }
+import play.api.{ Application, Environment, Mode }
 
 import scala.concurrent.Future
 
@@ -34,7 +34,7 @@ abstract class IdentityProvider {
 
   /**
    * Subclasses need to implement this to specify the authentication method
-    *
+   *
    * @return
    */
   def authMethod: AuthenticationMethod
@@ -80,7 +80,7 @@ object IdentityProvider {
 
   /**
    * Reads a property from the application.conf
-    *
+   *
    * @param property
    * @return
    */
@@ -119,14 +119,14 @@ object AuthenticationResult {
 
   /**
    * Returned when the user was succesfully authenticated
-    *
+   *
    * @param profile the authenticated user profile
    */
   case class Authenticated(profile: BasicProfile) extends AuthenticationResult
 
   /**
    * Returned when the authentication process failed for some reason.
-    *
+   *
    * @param error a description of the error
    */
   case class Failed(error: String) extends AuthenticationResult
@@ -141,7 +141,7 @@ object AuthenticationResult {
 trait ApiSupport {
   /**
    * Authenticates a user
-    *
+   *
    * @param request
    * @return
    */

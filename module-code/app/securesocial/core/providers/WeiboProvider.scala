@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 wuhaixing (wuhaixing at gmail dot com) - weibo: @数据水墨
-  * qiuzhanghua (qiuzhanghua at gmail.com) - weibo: qiuzhanghua
+ * qiuzhanghua (qiuzhanghua at gmail.com) - weibo: qiuzhanghua
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,9 +18,9 @@ package securesocial.core.providers
 
 import javax.inject.Inject
 
-import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.libs.ws.{ WSClient, WSResponse }
 import securesocial.core._
-import securesocial.core.services.{CacheService, RoutesService}
+import securesocial.core.services.{ CacheService, RoutesService }
 
 import scala.concurrent.Future
 
