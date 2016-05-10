@@ -20,9 +20,8 @@ import javax.inject.Inject
 
 import akka.actor.ActorSystem
 import play.api.Application
-import play.api.i18n.Lang
+import play.api.i18n._
 import play.api.mvc.RequestHeader
-import play.i18n.Messages
 import play.twirl.api.{ Html, Txt }
 import securesocial.controllers.MailTemplates
 import securesocial.core.BasicProfile
@@ -53,7 +52,7 @@ object Mailer {
   @Inject
   implicit var current: Application = null
   @Inject
-  implicit var messages: Messages = null
+  implicit var messagesApi: MessagesApi = null
 
   /**
    * The default mailer implementation
@@ -72,34 +71,40 @@ object Mailer {
 
     override def sendAlreadyRegisteredEmail(user: BasicProfile)(implicit request: RequestHeader, lang: Lang) {
       val txtAndHtml = mailTemplates.getAlreadyRegisteredEmail(user)
-      sendEmail(messages.at(AlreadyRegisteredSubject), user.email.get, txtAndHtml)
+      implicit val messages: Messages = messagesApi.preferred(request)
+      sendEmail(messages(AlreadyRegisteredSubject), user.email.get, txtAndHtml)
 
     }
 
     override def sendSignUpEmail(to: String, token: String)(implicit request: RequestHeader, lang: Lang) {
       val txtAndHtml = mailTemplates.getSignUpEmail(token)
-      sendEmail(messages.at(SignUpEmailSubject), to, txtAndHtml)
+      implicit val messages: Messages = messagesApi.preferred(request)
+      sendEmail(messages(SignUpEmailSubject), to, txtAndHtml)
     }
 
     override def sendWelcomeEmail(user: BasicProfile)(implicit request: RequestHeader, lang: Lang) {
       val txtAndHtml = mailTemplates.getWelcomeEmail(user)
-      sendEmail(messages.at(WelcomeEmailSubject), user.email.get, txtAndHtml)
+      implicit val messages: Messages = messagesApi.preferred(request)
+      sendEmail(messages(WelcomeEmailSubject), user.email.get, txtAndHtml)
 
     }
 
     override def sendPasswordResetEmail(user: BasicProfile, token: String)(implicit request: RequestHeader, lang: Lang) {
       val txtAndHtml = mailTemplates.getSendPasswordResetEmail(user, token)
-      sendEmail(messages.at(PasswordResetSubject), user.email.get, txtAndHtml)
+      implicit val messages: Messages = messagesApi.preferred(request)
+      sendEmail(messages(PasswordResetSubject), user.email.get, txtAndHtml)
     }
 
     override def sendUnkownEmailNotice(email: String)(implicit request: RequestHeader, lang: Lang) {
       val txtAndHtml = mailTemplates.getUnknownEmailNotice()
-      sendEmail(messages.at(UnknownEmailNoticeSubject), email, txtAndHtml)
+      implicit val messages: Messages = messagesApi.preferred(request)
+      sendEmail(messages(UnknownEmailNoticeSubject), email, txtAndHtml)
     }
 
     override def sendPasswordChangedNotice(user: BasicProfile)(implicit request: RequestHeader, lang: Lang) {
       val txtAndHtml = mailTemplates.getPasswordChangedNoticeEmail(user)
-      sendEmail(messages.at(PasswordResetOkSubject), user.email.get, txtAndHtml)
+      implicit val messages: Messages = messagesApi.preferred(request)
+      sendEmail(messages(PasswordResetOkSubject), user.email.get, txtAndHtml)
     }
 
     override def sendEmail(subject: String, recipient: String, body: (Option[Txt], Option[Html])) {

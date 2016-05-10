@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import play.api.Application
 import play.api.http.HeaderNames
-import play.api.i18n.Messages
+import play.api.i18n.{ Messages, MessagesApi }
 import play.api.libs.json.Json
 import play.api.mvc.{ Result, _ }
 import play.twirl.api.Html
@@ -41,15 +41,14 @@ trait SecureSocial extends Controller {
   implicit def executionContext: ExecutionContext = env.executionContext
 
   protected val notAuthenticatedJson = Unauthorized(Json.toJson(Map("error" -> "Credentials required"))).as(JSON)
-  @Inject
-  implicit var messages: Messages = null
+  implicit val messagesApi: MessagesApi
 
   protected def notAuthenticatedResult[A](implicit request: Request[A]): Future[Result] = {
     Future.successful {
       render {
         case Accepts.Json() => notAuthenticatedJson
         case Accepts.Html() => Redirect(env.routes.loginPageUrl).
-          flashing("error" -> messages("securesocial.loginRequired"))
+          flashing("error" -> messagesApi.preferred(request).messages("securesocial.loginRequired"))
           .withSession(request.session + (SecureSocial.OriginalUrlKey -> request.uri))
         case _ => Unauthorized("Credentials required")
       }

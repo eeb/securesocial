@@ -19,7 +19,7 @@ package securesocial.controllers
 import javax.inject.Inject
 
 import play.api.Application
-import play.api.i18n.Messages
+import play.api.i18n._
 import play.api.mvc._
 import securesocial.core._
 import securesocial.core.authenticator.CookieAuthenticator
@@ -31,8 +31,10 @@ import scala.concurrent.Future
 /**
  * A default controller that uses the BasicProfile as the user type
  */
-class ProviderController @Inject() (override implicit val env: RuntimeEnvironment)
-  extends BaseProviderController
+class ProviderController @Inject() (
+  override implicit val env: RuntimeEnvironment,
+  override val messagesApi: MessagesApi)
+    extends BaseProviderController
 
 /**
  * A trait that provides the means to authenticate users for web applications
@@ -94,7 +96,7 @@ trait BaseProviderController extends SecureSocial {
     env.providers.get(provider).map {
       _.authenticate().flatMap {
         case denied: AuthenticationResult.AccessDenied =>
-          Future.successful(Redirect(env.routes.accessDeniedUrl).flashing("error" -> Messages("securesocial.login.accessDenied")))
+          Future.successful(Redirect(env.routes.accessDeniedUrl).flashing("error" -> messagesApi.preferred(request)("securesocial.login.accessDenied")))
         case failed: AuthenticationResult.Failed =>
           logger.error(s"[securesocial] authentication failed, reason: ${failed.error}")
           throw new AuthenticationException()
@@ -141,7 +143,7 @@ trait BaseProviderController extends SecureSocial {
       } recover {
         case e =>
           logger.error("Unable to log user in. An exception was thrown", e)
-          Redirect(env.routes.loginPageUrl).flashing("error" -> Messages("securesocial.login.errorLoggingIn"))
+          Redirect(env.routes.loginPageUrl).flashing("error" -> messagesApi.preferred(request)("securesocial.login.errorLoggingIn"))
       }
     } getOrElse {
       Future.successful(NotFound)

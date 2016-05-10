@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.i18n.Messages
+import play.api.i18n._
 import play.api.mvc.Action
 import play.filters.csrf.{ CSRFCheck, _ }
 import securesocial.core._
@@ -35,7 +35,9 @@ import scala.concurrent.Future
  *
  * @param env an environment
  */
-class PasswordReset @Inject() (override implicit val env: RuntimeEnvironment) extends BasePasswordReset
+class PasswordReset @Inject() (
+  override implicit val env: RuntimeEnvironment,
+  override val messagesApi: MessagesApi) extends BasePasswordReset
 
 /**
  * The trait that provides the Password Reset functionality
@@ -52,7 +54,7 @@ trait BasePasswordReset extends MailTokenBasedOperations {
       tuple(
         BaseRegistration.Password1 -> nonEmptyText.verifying(PasswordValidator.constraint),
         BaseRegistration.Password2 -> nonEmptyText
-      ).verifying(Messages(BaseRegistration.PasswordsDoNotMatch), passwords => passwords._1 == passwords._2)
+      ).verifying(messagesApi.preferred(request)(BaseRegistration.PasswordsDoNotMatch), passwords => passwords._1 == passwords._2)
   )
 
   @Inject
@@ -92,7 +94,7 @@ trait BasePasswordReset extends MailTokenBasedOperations {
                   case None =>
                     env.mailer.sendUnkownEmailNotice(email)
                 }
-                handleStartResult().flashing(Success -> Messages(BaseRegistration.ThankYouCheckEmail))
+                handleStartResult().flashing(Success -> messagesApi.preferred(request)(BaseRegistration.ThankYouCheckEmail))
             }
           }
         )
@@ -136,11 +138,11 @@ trait BasePasswordReset extends MailTokenBasedOperations {
                   ) yield {
                     env.mailer.sendPasswordChangedNotice(profile)
                     val eventSession = Events.fire(new PasswordResetEvent(updated)).getOrElse(request.session)
-                    confirmationResult().withSession(eventSession).flashing(Success -> Messages(PasswordUpdated))
+                    confirmationResult().withSession(eventSession).flashing(Success -> messagesApi.preferred(request)(PasswordUpdated))
                   }
                 case _ =>
                   logger.error("[securesocial] could not find user with email %s during password reset".format(t.email))
-                  Future.successful(confirmationResult().flashing(Error -> Messages(ErrorUpdatingPassword)))
+                  Future.successful(confirmationResult().flashing(Error -> messagesApi.preferred(request)(ErrorUpdatingPassword)))
               }
           )
       })

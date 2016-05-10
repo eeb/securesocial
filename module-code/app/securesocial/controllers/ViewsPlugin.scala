@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import play.api.Application
 import play.api.data.Form
-import play.api.i18n.{ Lang, Messages }
+import play.api.i18n.{ Lang, Messages, MessagesApi }
 import play.api.mvc.RequestHeader
 import play.twirl.api.{ Html, Txt }
 import securesocial.core.{ BasicProfile, RuntimeEnvironment }
@@ -167,10 +167,10 @@ object ViewTemplates {
       securesocial.views.html.passwordChange(form)
     }
 
-    @Inject
-    implicit var messages: Messages = null
+    implicit var messagesApi: MessagesApi
 
     override def getNotAuthorizedPage(implicit request: RequestHeader, lang: Lang): Html = {
+      implicit val messages: Messages = messagesApi.preferred(request)
       securesocial.views.html.notAuthorized()
     }
   }

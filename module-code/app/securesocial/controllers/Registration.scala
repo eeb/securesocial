@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import play.api.data.Forms._
 import play.api.data._
-import play.api.i18n.Messages
+import play.api.i18n._
 import play.api.mvc.Action
 import play.filters.csrf.{ CSRFCheck, _ }
 import securesocial.core._
@@ -36,7 +36,9 @@ import scala.concurrent.{ Await, Future }
  *
  * @param env the environment
  */
-class Registration @Inject() (override implicit val env: RuntimeEnvironment) extends BaseRegistration
+class Registration @Inject() (
+  override implicit val env: RuntimeEnvironment,
+  override val messagesApi: MessagesApi) extends BaseRegistration
 
 /**
  * A trait that provides the means to handle user registration
@@ -57,7 +59,7 @@ trait BaseRegistration extends MailTokenBasedOperations {
 
   val formWithUsername = Form[RegistrationInfo](
     mapping(
-      UserName -> nonEmptyText.verifying(Messages(UserNameAlreadyTaken), userName => {
+      UserName -> nonEmptyText.verifying(messagesApi.preferred(request)(UserNameAlreadyTaken), userName => {
         // todo: see if there's a way to avoid waiting here :-\
         import scala.concurrent.duration._
         Await.result(env.userService.find(providerId, userName), 20.seconds).isEmpty
@@ -68,7 +70,7 @@ trait BaseRegistration extends MailTokenBasedOperations {
         tuple(
           Password1 -> nonEmptyText.verifying(PasswordValidator.constraint),
           Password2 -> nonEmptyText
-        ).verifying(Messages(PasswordsDoNotMatch), passwords => passwords._1 == passwords._2)
+        ).verifying(messagesApi.preferred(request)(PasswordsDoNotMatch), passwords => passwords._1 == passwords._2)
     ) // binding
     ((userName, firstName, lastName, password) => RegistrationInfo(Some(userName), firstName, lastName, password._1)) // unbinding
     (info => Some((info.userName.getOrElse(""), info.firstName, info.lastName, ("", ""))))
@@ -82,7 +84,7 @@ trait BaseRegistration extends MailTokenBasedOperations {
         tuple(
           Password1 -> nonEmptyText.verifying(PasswordValidator.constraint),
           Password2 -> nonEmptyText
-        ).verifying(Messages(PasswordsDoNotMatch), passwords => passwords._1 == passwords._2)
+        ).verifying(messagesApi.preferred(request)(PasswordsDoNotMatch), passwords => passwords._1 == passwords._2)
     ) // binding
     ((firstName, lastName, password) => RegistrationInfo(None, firstName, lastName, password._1)) // unbinding
     (info => Some((info.firstName, info.lastName, ("", ""))))
@@ -132,7 +134,7 @@ trait BaseRegistration extends MailTokenBasedOperations {
                       env.userService.saveToken(token)
                     }
                 }
-                handleStartResult().flashing(Success -> Messages(ThankYouCheckEmail), Email -> email)
+                handleStartResult().flashing(Success -> messagesApi.preferred(request)(ThankYouCheckEmail), Email -> email)
             }
           }
         )
@@ -201,16 +203,16 @@ trait BaseRegistration extends MailTokenBasedOperations {
                     env.authenticatorService.find(CookieAuthenticator.Id).map {
                       _.fromUser(saved).flatMap { authenticator =>
                         confirmationResult()
-                          .flashing(Success -> Messages(SignUpDone))
+                          .flashing(Success -> messagesApi.preferred(request)(SignUpDone))
                           .withSession(eventSession - SecureSocial.OriginalUrlKey - IdentityProvider.SessionId)
                           .startingAuthenticator(authenticator)
                       }
                     } getOrElse {
                       logger.error("[securesocial] There isn't CookieAuthenticator registered in the RuntimeEnvironment")
-                      Future.successful(confirmationResult().flashing(Error -> Messages("There was an error signing you up")))
+                      Future.successful(confirmationResult().flashing(Error -> messagesApi.preferred(request)("There was an error signing you up")))
                     }
                   } else {
-                    Future.successful(confirmationResult().flashing(Success -> Messages(SignUpDone)).withSession(eventSession))
+                    Future.successful(confirmationResult().flashing(Success -> messagesApi.preferred(request)(SignUpDone)).withSession(eventSession))
                   }
                 }
                 result.flatMap(f => f)
@@ -235,9 +237,9 @@ object BaseRegistration {
 /**
  * The data collected during the registration process
  *
- * @param userName the username
+ * @param userName  the username
  * @param firstName the first name
- * @param lastName the last name
- * @param password the password
+ * @param lastName  the last name
+ * @param password  the password
  */
 case class RegistrationInfo(userName: Option[String], firstName: String, lastName: String, password: String)

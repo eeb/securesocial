@@ -32,7 +32,7 @@ import java.util.concurrent.CompletionStage;
  *
  * @see securesocial.core.java.SecuredActionResponses
  */
-public class DefaultSecuredActionResponses extends Controller implements SecuredActionResponses {
+public class DefaultSecuredActionResponses  extends Controller implements SecuredActionResponses {
     @Inject
     play.api.i18n.Messages messages = null;
 

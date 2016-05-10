@@ -24,7 +24,6 @@ import play.api.Application
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.i18n.Messages
 import play.api.mvc.{ RequestHeader, Result }
 import securesocial.core.SecureSocial
 import securesocial.core.providers.MailToken
@@ -80,7 +79,7 @@ abstract class MailTokenBasedOperations extends SecureSocial {
       case Some(t) if !t.isExpired && t.isSignUp == isSignUp => f(t)
       case _ =>
         val to = if (isSignUp) env.routes.startSignUpUrl else env.routes.startResetPasswordUrl
-        Future.successful(Redirect(to).flashing(Error -> Messages(BaseRegistration.InvalidLink)))
+        Future.successful(Redirect(to).flashing(Error -> messagesApi.preferred(request)(BaseRegistration.InvalidLink)))
     }
   }
 
