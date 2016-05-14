@@ -135,7 +135,7 @@ class CookieAuthenticatorBuilder[U](store: AuthenticatorStore[CookieAuthenticato
 
   import store.executionContext
 
-  val id = config.Id
+  val id = config.cookieAuthId
 
   /**
    * Creates an instance of a CookieAuthenticator from the http request

@@ -31,6 +31,9 @@ class SecureSocialConfig(configuration: Configuration, environment: Environment)
     result
   }
 
+  val cookieAuthId = "cookie"
+  val httpAuthId = "http"
+
   /**
    * Reads a property from the application.conf
    *
@@ -111,8 +114,6 @@ class SecureSocialConfig(configuration: Configuration, environment: Environment)
     }
     result.get
   }
-
-  val Id = "cookie"
 
   // property keys
   val CookieNameKey = "securesocial.cookie.name"

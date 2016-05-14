@@ -89,7 +89,7 @@ class HttpHeaderAuthenticatorBuilder[U](store: AuthenticatorStore[HttpHeaderAuth
 
   import store.executionContext
 
-  val id = config.Id
+  val id = config.httpAuthId
 
   /**
    * Creates an instance of a HttpHeaderAuthenticator from the http request
