@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,11 +18,18 @@ package controllers
 
 import javax.inject.Inject
 
-import securesocial.core._
-import service.{ MyEnvironment, MyEventListener, DemoUser }
+import play.api.i18n.MessagesApi
 import play.api.mvc.{ Action, RequestHeader }
+import securesocial.core._
+import service.{ DemoUser, MyEnvironment }
 
-class Application @Inject() (override implicit val env: MyEnvironment) extends securesocial.core.SecureSocial {
+import scala.concurrent.ExecutionContext
+
+class Application @Inject() (
+    override implicit val env: MyEnvironment,
+    override implicit val messagesApi: MessagesApi,
+    override implicit val executionContext: ExecutionContext,
+    override implicit val config: SecureSocialConfig) extends securesocial.core.SecureSocial {
   def index = SecuredAction { implicit request =>
     Ok(views.html.index(request.user.main))
   }

@@ -18,7 +18,6 @@ package securesocial.controllers
 
 import javax.inject.Inject
 
-import play.api.Application
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n._
@@ -28,7 +27,7 @@ import securesocial.core.SecureSocial._
 import securesocial.core._
 import securesocial.core.providers.utils.PasswordValidator
 
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 
 /**
  * A default PasswordChange controller that uses the BasicProfile as the user type
@@ -37,7 +36,11 @@ import scala.concurrent.{ Await, Future }
  */
 class PasswordChange @Inject() (
   override implicit val env: RuntimeEnvironment,
-  override val messagesApi: MessagesApi) extends BasePasswordChange
+  override val messagesApi: MessagesApi,
+  override val executionContext: ExecutionContext,
+  override implicit val csrfAddToken: CSRFAddToken,
+  override implicit val config: SecureSocialConfig,
+  override implicit val csrfCheck: CSRFCheck) extends BasePasswordChange
 
 /**
  * A trait that defines the password change functionality
@@ -53,16 +56,17 @@ trait BasePasswordChange extends SecureSocial {
   val Error = "error"
   val OkMessage = "securesocial.passwordChange.ok"
 
+  implicit val config: SecureSocialConfig
+  implicit val csrfAddToken: CSRFAddToken
+  implicit val csrfCheck: CSRFCheck
+
   /**
    * The property that specifies the page the user is redirected to after changing the password.
    */
   val onPasswordChangeGoTo = "securesocial.onPasswordChangeGoTo"
 
-  @Inject
-  implicit var application: Application = null
-
   /** The redirect target of the handlePasswordChange action. */
-  def onHandlePasswordChangeGoTo = application.configuration.getString(onPasswordChangeGoTo).getOrElse(
+  def onHandlePasswordChangeGoTo = config.configObj.getString(onPasswordChangeGoTo).getOrElse(
     securesocial.controllers.routes.PasswordChange.page().url
   )
 
@@ -109,15 +113,12 @@ trait BasePasswordChange extends SecureSocial {
     }
   }
 
-  @Inject
-  implicit var CSRFAddToken: CSRFAddToken = null
-
   /**
    * Renders the password change page
    *
    * @return
    */
-  def page = CSRFAddToken {
+  def page = csrfAddToken {
     SecuredAction.async { implicit request =>
       execute { form: Form[ChangeInfo] =>
         Future.successful {
@@ -127,15 +128,12 @@ trait BasePasswordChange extends SecureSocial {
     }
   }
 
-  @Inject
-  implicit var CSRFCheck: CSRFCheck = null
-
   /**
    * Handles form submission from the password change page
    *
    * @return
    */
-  def handlePasswordChange = CSRFCheck {
+  def handlePasswordChange = csrfCheck {
     SecuredAction.async { implicit request =>
       execute { form: Form[ChangeInfo] =>
         form.bindFromRequest()(request).fold(

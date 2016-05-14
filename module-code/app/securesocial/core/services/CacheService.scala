@@ -43,24 +43,21 @@ object CacheService {
   /**
    * A default implementation for the CacheService based on the Play cache.
    */
-  class Default(implicit val executionContext: ExecutionContext) extends CacheService {
+  class Default(
+      implicit val executionContext: ExecutionContext,
+      implicit val cache: CacheApi) extends CacheService {
 
     import scala.reflect.ClassTag
 
-    @Inject
-    implicit var application: Application = null
-    @Inject
-    implicit var Cache: CacheApi = null
-
     override def set[T](key: String, value: T, ttlInSeconds: Int): Future[Unit] =
-      Future.successful(Cache.set(key, value, Duration(ttlInSeconds, "s")))
+      Future.successful(cache.set(key, value, Duration(ttlInSeconds, "s")))
 
     override def getAs[T](key: String)(implicit ct: ClassTag[T]): Future[Option[T]] = Future.successful {
-      Cache.get[T](key)
+      cache.get[T](key)
     }
 
     override def remove(key: String): Future[Unit] = Future.successful {
-      Cache.remove(key)
+      cache.remove(key)
     }
   }
 

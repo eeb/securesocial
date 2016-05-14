@@ -19,8 +19,9 @@ package securesocial.core.authenticator
 import java.security.SecureRandom
 import javax.inject.Inject
 
-import play.api.Application
+import play.api.{ Application, Configuration }
 import play.api.libs.Codecs
+import securesocial.core.SecureSocialConfig
 
 import scala.concurrent.Future
 
@@ -36,15 +37,10 @@ object IdGenerator {
   /**
    * The default id generator
    */
-  class Default extends IdGenerator {
+  class Default(implicit val config: SecureSocialConfig) extends IdGenerator {
     //todo: this needs improvement, several threads will wait for the synchronized block in SecureRandom.
     // I will probably need a pool of SecureRandom instances.
     val random = new SecureRandom()
-    val DefaultSizeInBytes = 128
-    val IdLengthKey = "securesocial.idLengthInBytes"
-    @Inject
-    implicit var application: Application = null
-    val IdSizeInBytes = application.configuration.getInt(IdLengthKey).getOrElse(DefaultSizeInBytes)
 
     /**
      * Generates a new id using SecureRandom
@@ -54,7 +50,7 @@ object IdGenerator {
     def generate: Future[String] = {
       //todo: review the usage of future here
       Future.successful {
-        var randomValue = new Array[Byte](IdSizeInBytes)
+        var randomValue = new Array[Byte](config.IdSizeInBytes)
         random.nextBytes(randomValue)
         Codecs.toHexString(randomValue)
       }

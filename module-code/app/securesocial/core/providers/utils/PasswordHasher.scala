@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import org.mindrot.jbcrypt._
 import play.api.Application
-import securesocial.core.PasswordInfo
+import securesocial.core.{ PasswordInfo, SecureSocialConfig }
 
 /**
  * A trait that defines the password hasher interface
@@ -56,10 +56,8 @@ object PasswordHasher {
   /**
    * The default password hasher based on BCrypt.
    */
-  class Default extends PasswordHasher {
-    @Inject
-    implicit var application: Application = null
-    val logRounds: Int = application.configuration.getInt(Default.RoundsProperty).getOrElse(Default.Rounds)
+  class Default @Inject() (implicit val config: SecureSocialConfig) extends PasswordHasher {
+    val logRounds: Int = config.configObj.getInt(Default.RoundsProperty).getOrElse(Default.Rounds)
 
     /**
      * The hasher id

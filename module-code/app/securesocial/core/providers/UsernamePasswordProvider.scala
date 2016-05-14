@@ -16,12 +16,8 @@
  */
 package securesocial.core.providers
 
-import javax.inject.Inject
-
 import org.joda.time.DateTime
-import play.Application
 import play.api.data.Form
-import play.api.data.Forms._
 import play.api.mvc._
 import securesocial.controllers.ViewTemplates
 import securesocial.core.AuthenticationResult.{ Authenticated, NavigationFlow }
@@ -37,10 +33,11 @@ import scala.concurrent.{ ExecutionContext, Future }
 class UsernamePasswordProvider[U](userService: UserService[U],
   avatarService: Option[AvatarService],
   viewTemplates: ViewTemplates,
-  passwordHashers: Map[String, PasswordHasher])(implicit val executionContext: ExecutionContext)
+  passwordHashers: Map[String, PasswordHasher])(implicit val executionContext: ExecutionContext,
+    implicit val config: SecureSocialConfig)
     extends IdentityProvider with ApiSupport with Controller {
 
-  override val id = UsernamePasswordProvider.UsernamePassword
+  override val id = config.UsernamePassword
 
   def authMethod = AuthenticationMethod.UserPassword
 
@@ -70,7 +67,7 @@ class UsernamePasswordProvider[U](userService: UserService[U],
     if (apiMode)
       AuthenticationResult.Failed("Invalid credentials")
     else
-      NavigationFlow(badRequest(UsernamePasswordProvider.loginForm, Some(InvalidCredentials)))
+      NavigationFlow(badRequest(config.loginForm, Some(InvalidCredentials)))
   }
 
   protected def withUpdatedAvatar(profile: BasicProfile): Future[BasicProfile] = {
@@ -84,7 +81,7 @@ class UsernamePasswordProvider[U](userService: UserService[U],
   }
 
   private def doAuthentication[A](apiMode: Boolean = false)(implicit request: Request[A]): Future[AuthenticationResult] = {
-    val form = UsernamePasswordProvider.loginForm.bindFromRequest()
+    val form = config.loginForm.bindFromRequest()
     form.fold(
       errors => Future.successful {
         if (apiMode)
@@ -106,30 +103,7 @@ class UsernamePasswordProvider[U](userService: UserService[U],
   private def badRequest[A](f: Form[(String, String)], msg: Option[String] = None)(implicit request: Request[A]): Result = {
     Results.BadRequest(viewTemplates.getLoginPage(f, msg))
   }
-}
 
-object UsernamePasswordProvider {
-  @Inject
-  var current: Application = null
-  val UsernamePassword = "userpass"
-  private val Key = "securesocial.userpass.withUserNameSupport"
-  private val SendWelcomeEmailKey = "securesocial.userpass.sendWelcomeEmail"
-  private val Hasher = "securesocial.userpass.hasher"
-  private val EnableTokenJob = "securesocial.userpass.enableTokenJob"
-  private val SignupSkipLogin = "securesocial.userpass.signupSkipLogin"
-
-  val loginForm = Form(
-    tuple(
-      "username" -> nonEmptyText,
-      "password" -> nonEmptyText
-    )
-  )
-
-  lazy val withUserNameSupport = current.configuration.getBoolean(Key, false)
-  lazy val sendWelcomeEmail = current.configuration.getBoolean(SendWelcomeEmailKey, true)
-  lazy val hasher = current.configuration.getString(Hasher, PasswordHasher.id)
-  lazy val enableTokenJob = current.configuration.getBoolean(EnableTokenJob, true)
-  lazy val signupSkipLogin = current.configuration.getBoolean(SignupSkipLogin, false)
 }
 
 /**

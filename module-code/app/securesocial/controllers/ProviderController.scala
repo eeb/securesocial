@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,22 +18,24 @@ package securesocial.controllers
 
 import javax.inject.Inject
 
-import play.api.Application
 import play.api.i18n._
 import play.api.mvc._
+import play.api.{ Application, Environment }
 import securesocial.core._
-import securesocial.core.authenticator.CookieAuthenticator
 import securesocial.core.services.SaveMode
 import securesocial.core.utils._
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * A default controller that uses the BasicProfile as the user type
  */
 class ProviderController @Inject() (
   override implicit val env: RuntimeEnvironment,
-  override val messagesApi: MessagesApi)
+  override val messagesApi: MessagesApi,
+  override implicit val config: SecureSocialConfig,
+  implicit val environment: Environment,
+  override val executionContext: ExecutionContext)
     extends BaseProviderController
 
 /**
@@ -41,7 +43,9 @@ class ProviderController @Inject() (
  */
 trait BaseProviderController extends SecureSocial {
 
-  import securesocial.controllers.ProviderControllerHelper.{ logger, toUrl }
+  val logger = play.api.Logger("securesocial.controllers.ProviderController")
+
+  implicit val config: SecureSocialConfig
 
   /**
    * The authentication entry point for GET requests
@@ -60,7 +64,7 @@ trait BaseProviderController extends SecureSocial {
   /**
    * Overrides the original url if neded
    *
-   * @param session the current session
+   * @param session    the current session
    * @param redirectTo the url that overrides the originalUrl
    * @return a session updated with the url
    */
@@ -74,10 +78,9 @@ trait BaseProviderController extends SecureSocial {
   /**
    * Find the AuthenticatorBuilder needed to start the authenticated session
    */
-  private def builder() = {
-
+  private def builder(implicit config: SecureSocialConfig) = {
     //todo: this should be configurable maybe
-    env.authenticatorService.find(CookieAuthenticator.Id).getOrElse {
+    env.authenticatorService.find(config.Id).getOrElse {
       logger.error(s"[securesocial] missing CookieAuthenticatorBuilder")
       throw new AuthenticationException()
     }
@@ -86,10 +89,10 @@ trait BaseProviderController extends SecureSocial {
   /**
    * Common method to handle GET and POST authentication requests
    *
-   * @param provider the provider that needs to handle the flow
+   * @param provider   the provider that needs to handle the flow
    * @param redirectTo the url the user needs to be redirected to after being authenticated
    */
-  private def handleAuth(provider: String, redirectTo: Option[String]) = UserAwareAction.async { implicit request =>
+  private def handleAuth(provider: String, redirectTo: Option[String])(implicit config: SecureSocialConfig) = UserAwareAction.async { implicit request =>
     val authenticationFlow = request.user.isEmpty
     val modifiedSession = overrideOriginalUrl(request.session, redirectTo)
 
@@ -114,10 +117,10 @@ trait BaseProviderController extends SecureSocial {
                 logger.debug(s"[securesocial] user completed authentication: provider = ${profile.providerId}, userId: ${profile.userId}, mode = $mode")
                 val evt = if (mode == SaveMode.LoggedIn) new LoginEvent(userForAction) else new SignUpEvent(userForAction)
                 val sessionAfterEvents = Events.fire(evt).getOrElse(request.session)
-                builder().fromUser(userForAction).flatMap { authenticator =>
+                builder.fromUser(userForAction).flatMap { authenticator =>
                   Redirect(toUrl(sessionAfterEvents)).withSession(sessionAfterEvents -
                     SecureSocial.OriginalUrlKey -
-                    IdentityProvider.SessionId -
+                    config.SessionId -
                     OAuth1Provider.CacheKey).startingAuthenticator(authenticator)
                 }
               }
@@ -130,7 +133,7 @@ trait BaseProviderController extends SecureSocial {
                   updatedAuthenticator <- request.authenticator.get.updateUser(linked);
                   result <- Redirect(toUrl(modifiedSession)).withSession(modifiedSession -
                     SecureSocial.OriginalUrlKey -
-                    IdentityProvider.SessionId -
+                    config.SessionId -
                     OAuth1Provider.CacheKey).touchingAuthenticator(updatedAuthenticator)
                 ) yield {
                   logger.debug(s"[securesocial] linked $currentUser to: providerId = ${authenticated.profile.providerId}")
@@ -149,44 +152,13 @@ trait BaseProviderController extends SecureSocial {
       Future.successful(NotFound)
     }
   }
-}
-
-object ProviderControllerHelper {
-  val logger = play.api.Logger("securesocial.controllers.ProviderController")
-
-  /**
-   * The property that specifies the page the user is redirected to if there is no original URL saved in
-   * the session.
-   */
-  val onLoginGoTo = "securesocial.onLoginGoTo"
-
-  /**
-   * The root path
-   */
-  val Root = "/"
-
-  /**
-   * The application context
-   */
-  val ApplicationContext = "application.context"
-
-  /**
-   * The url where the user needs to be redirected after succesful authentication.
-   *
-   * @return
-   */
-  def landingUrl = application.configuration.getString(onLoginGoTo).getOrElse(
-    application.configuration.getString(ApplicationContext).getOrElse(Root)
-  )
-
-  @Inject
-  implicit var application: Application = null
-
   /**
    * Returns the url that the user should be redirected to after login
    *
    * @param session
    * @return
    */
-  def toUrl(session: Session) = session.get(SecureSocial.OriginalUrlKey).getOrElse(ProviderControllerHelper.landingUrl)
+  def toUrl(session: Session) = session.get(SecureSocial.OriginalUrlKey).getOrElse(config.landingUrl)
+
 }
+

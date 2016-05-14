@@ -30,8 +30,9 @@ import scala.concurrent.Future
  */
 class WeiboProvider(routesService: RoutesService,
   cacheService: CacheService,
-  client: OAuth2Client)
-    extends OAuth2Provider(routesService, client, cacheService) {
+  client: OAuth2Client,
+  config: SecureSocialConfig)
+    extends OAuth2Provider(routesService, client, cacheService, config) {
 
   @Inject
   val WS: WSClient = null

@@ -7,7 +7,7 @@ package service
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,16 +17,27 @@ package service
  *
  */
 
-import com.google.inject.{ Inject, Singleton }
+import com.google.inject.Inject
 import controllers.CustomRoutesService
-import securesocial.core.{ BasicProfile, RuntimeEnvironment }
+import play.api.cache.CacheApi
+import play.api.i18n.MessagesApi
+import play.api.libs.ws.WSClient
+import securesocial.core.{ RuntimeEnvironment, SecureSocialConfig }
 
-class MyEnvironment extends RuntimeEnvironment.Default {
+import scala.concurrent.ExecutionContext
+
+class MyEnvironment @Inject() (
+    override implicit val executionContext: ExecutionContext,
+    implicit val messagesApi: MessagesApi,
+    override implicit val config: SecureSocialConfig,
+    override implicit val cache: CacheApi,
+    override implicit val ws: WSClient) extends RuntimeEnvironment.Default {
+
   override type U = DemoUser
-  override implicit val executionContext = play.api.libs.concurrent.Execution.defaultContext
   override lazy val routes = new CustomRoutesService()
   override lazy val userService: InMemoryUserService = new InMemoryUserService()
   override lazy val eventListeners = List(new MyEventListener())
+
 }
 
 /*

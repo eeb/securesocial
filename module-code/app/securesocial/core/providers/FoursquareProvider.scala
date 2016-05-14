@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,8 +27,9 @@ import scala.concurrent.Future
  */
 class FoursquareProvider(routesService: RoutesService,
   cacheService: CacheService,
-  client: OAuth2Client)
-    extends OAuth2Provider(routesService, client, cacheService) {
+  client: OAuth2Client,
+  config: SecureSocialConfig)
+    extends OAuth2Provider(routesService, client, cacheService, config) {
   val GetAuthenticatedUser = "https://api.foursquare.com/v2/users/self?v=20140404&oauth_token=%s"
   val AccessToken = "access_token"
   val TokenType = "token_type"

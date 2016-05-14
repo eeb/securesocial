@@ -16,11 +16,13 @@
  */
 package service
 
+import com.google.inject.Inject
 import play.api.Logger
 import securesocial.core._
-import securesocial.core.providers.{ UsernamePasswordProvider, MailToken }
+import securesocial.core.providers.{ MailToken, UsernamePasswordProvider }
+
 import scala.concurrent.Future
-import securesocial.core.services.{ UserService, SaveMode }
+import securesocial.core.services.{ SaveMode, UserService }
 
 /**
  * A Sample In Memory user service in Scala
@@ -28,7 +30,8 @@ import securesocial.core.services.{ UserService, SaveMode }
  * IMPORTANT: This is just a sample and not suitable for a production environment since
  * it stores everything in memory.
  */
-class InMemoryUserService extends UserService[DemoUser] {
+class InMemoryUserService @Inject() (
+    implicit val config: SecureSocialConfig) extends UserService[DemoUser] {
   val logger = Logger("application.controllers.InMemoryUserService")
 
   //
@@ -149,7 +152,7 @@ class InMemoryUserService extends UserService[DemoUser] {
     Future.successful {
       for (
         found <- users.values.find(_ == user);
-        identityWithPasswordInfo <- found.identities.find(_.providerId == UsernamePasswordProvider.UsernamePassword)
+        identityWithPasswordInfo <- found.identities.find(_.providerId == config.UsernamePassword)
       ) yield {
         val idx = found.identities.indexOf(identityWithPasswordInfo)
         val updated = identityWithPasswordInfo.copy(passwordInfo = Some(info))
@@ -165,7 +168,7 @@ class InMemoryUserService extends UserService[DemoUser] {
     Future.successful {
       for (
         found <- users.values.find(u => u.main.providerId == user.main.providerId && u.main.userId == user.main.userId);
-        identityWithPasswordInfo <- found.identities.find(_.providerId == UsernamePasswordProvider.UsernamePassword)
+        identityWithPasswordInfo <- found.identities.find(_.providerId == config.UsernamePassword)
       ) yield {
         identityWithPasswordInfo.passwordInfo.get
       }

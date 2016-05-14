@@ -11,8 +11,9 @@ import scala.concurrent.Future
  */
 class VkProvider(routesService: RoutesService,
   cacheService: CacheService,
-  client: OAuth2Client)
-    extends OAuth2Provider(routesService, client, cacheService) {
+  client: OAuth2Client,
+  config: SecureSocialConfig)
+    extends OAuth2Provider(routesService, client, cacheService, config) {
   val GetProfilesApi = "https://api.vk.com/method/getProfiles?fields=uid,first_name,last_name,photo&access_token="
   val Response = "response"
   val Id = "uid"

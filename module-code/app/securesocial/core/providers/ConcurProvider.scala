@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,12 +16,13 @@
  */
 package securesocial.core.providers
 
+import com.google.inject.Inject
 import org.joda.time.{ DateTime, Seconds }
 import org.joda.time.format.DateTimeFormat
 import play.api.http.HeaderNames
 import play.api.libs.ws.WSResponse
 import play.api.mvc.Request
-import securesocial.core.{ AuthenticationException, BasicProfile, OAuth2Client, OAuth2Constants, OAuth2Info, OAuth2Provider }
+import securesocial.core._
 import securesocial.core.services.{ CacheService, RoutesService }
 
 import scala.concurrent.{ ExecutionContext, Future }
@@ -35,15 +36,16 @@ import scala.xml.Node
  *
  * Unfortunately, Concur does not implement the exact OAuth2 specification.
  * It differs in two main points:
- *  - getAccessToken uses a HTTP GET request (instead of HTTP POST as specified
- *    in http://tools.ietf.org/html/rfc6749#section-3.2)
- *  - the access token response is delivered in XML (instead of JSON as
- *    specified in http://tools.ietf.org/html/rfc6749#section-5.1)
+ * - getAccessToken uses a HTTP GET request (instead of HTTP POST as specified
+ * in http://tools.ietf.org/html/rfc6749#section-3.2)
+ * - the access token response is delivered in XML (instead of JSON as
+ * specified in http://tools.ietf.org/html/rfc6749#section-5.1)
  */
 class ConcurProvider(routesService: RoutesService,
   cacheService: CacheService,
-  client: OAuth2Client)
-    extends OAuth2Provider(routesService, client, cacheService) {
+  client: OAuth2Client,
+  config: SecureSocialConfig)
+    extends OAuth2Provider(routesService, client, cacheService, config) {
   /** formatter used to parse the expiration date returned from Concur */
   private val ExpirationDateFormatter = DateTimeFormat.forPattern("MM/dd/yyyy HH:mm:ss a")
 
@@ -121,12 +123,21 @@ class ConcurProvider(routesService: RoutesService,
   /**
    * Masks sensitive information so that it doesn't end up in the logs.
    */
-  def maskSensitiveInformation(node: Node): Node = node match {
-    case <Access_Token>{ ch @ _* }</Access_Token> => <Access_Token>{ ch.map(maskSensitiveInformation) }</Access_Token>
-    case <Token>{ contents @ _* }</Token> => <Token>*** masked ***</Token>
-    case <Refresh_Token>{ contents @ _* }</Refresh_Token> => <Refresh_Token>*** masked ***</Refresh_Token>
+  def maskSensitiveInformation(node: Node): Node = ??? /* node match {
+    case <Access_Token>
+           { ch @ _* }
+         </Access_Token> => <Access_Token>
+                              { ch.map(maskSensitiveInformation) }
+                            </Access_Token>
+    case <Token>
+           { contents @ _* }
+         </Token> => <Token>*** masked ***</Token>
+    case <Refresh_Token>
+           { contents @ _* }
+         </Refresh_Token> => <Refresh_Token>*** masked ***</Refresh_Token>
     case other @ _ => other
-  }
+  }*/
+
 }
 
 object ConcurProvider {

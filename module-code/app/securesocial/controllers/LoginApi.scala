@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,19 +19,22 @@ package securesocial.controllers
 import javax.inject.Inject
 
 import org.joda.time.DateTime
-import securesocial.core._
+import play.api.i18n.MessagesApi
 import play.api.mvc.Action
-import scala.concurrent.{ ExecutionContext, Future }
-import securesocial.core.SignUpEvent
 import securesocial.core.AuthenticationResult.Authenticated
-import securesocial.core.LoginEvent
-import securesocial.core.BasicProfile
+import securesocial.core.{ LoginEvent, SignUpEvent, _ }
 import securesocial.core.services.SaveMode
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * A default controller that uses the BasicProfile as the application user type.
  */
-class LoginApi @Inject() (override implicit val env: RuntimeEnvironment) extends BaseLoginApi
+class LoginApi @Inject() (
+  override implicit val env: RuntimeEnvironment,
+  override val messagesApi: MessagesApi,
+  override val executionContext: ExecutionContext,
+  override implicit val config: SecureSocialConfig) extends BaseLoginApi
 
 /**
  * This trait provides the means to provide an authentication API that can be used by client side or mobile apps.

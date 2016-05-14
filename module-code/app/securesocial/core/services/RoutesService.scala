@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import play.api.Application
 import play.api.mvc.{ Call, RequestHeader }
-import securesocial.core.IdentityProvider
+import securesocial.core.{ IdentityProvider, SecureSocialConfig }
 
 /**
  * A RoutesService that resolves the routes for some of the pages
@@ -99,6 +99,7 @@ trait RoutesService {
   def bootstrapCssPath: Call
 
   def customCssPath: Option[Call]
+
 }
 
 object RoutesService {
@@ -107,11 +108,8 @@ object RoutesService {
    * The default RoutesService implementation.  It points to the routes
    * defined by the built in controllers.
    */
-  class Default extends RoutesService {
+  class Default @Inject() (implicit val config: SecureSocialConfig) extends RoutesService {
     private val logger = play.api.Logger("securesocial.core.DefaultRoutesService")
-    @Inject
-    implicit var application: Application = null
-    lazy val conf = application.configuration
 
     val FaviconKey = "securesocial.faviconPath"
     val JQueryKey = "securesocial.jqueryPath"
@@ -122,7 +120,7 @@ object RoutesService {
     val DefaultBootstrapCssPath = "bootstrap/css/bootstrap.min.css"
 
     protected def absoluteUrl(call: Call)(implicit req: RequestHeader): String = {
-      call.absoluteURL(IdentityProvider.sslEnabled)
+      call.absoluteURL(config.sslEnabled)
     }
 
     override def loginPageUrl(implicit req: RequestHeader): String = {
@@ -177,42 +175,32 @@ object RoutesService {
       absoluteUrl(securesocial.controllers.routes.ProviderController.authenticate(provider, redirectTo))
     }
 
-    protected def valueFor(key: String, default: String) = {
-      val value = conf.getString(key).getOrElse(default)
-      logger.debug(s"[securesocial] $key = $value")
-      securesocial.controllers.routes.Assets.at(value)
-    }
-
     /**
      * Loads the Favicon to use from configuration, using a default one if not provided
      *
      * @return the path to Favicon file to use
      */
-    override val faviconPath = valueFor(FaviconKey, DefaultFaviconPath)
+    override val faviconPath = config.valueFor(FaviconKey, DefaultFaviconPath)
 
     /**
      * Loads the Jquery file to use from configuration, using a default one if not provided
      *
      * @return the path to Jquery file to use
      */
-    override val jqueryPath = valueFor(JQueryKey, DefaultJqueryPath)
+    override val jqueryPath = config.valueFor(JQueryKey, DefaultJqueryPath)
 
     /**
      * Loads the Bootstrap CSS file to use from configuration, using a default one if not provided
      *
      * @return the path to Bootstrap CSS file to use
      */
-    override val bootstrapCssPath = valueFor(BootstrapCssKey, DefaultBootstrapCssPath)
+    override val bootstrapCssPath = config.valueFor(BootstrapCssKey, DefaultBootstrapCssPath)
     /**
      * Loads the Custom Css file to use from configuration. If there is none define, none will be used
      *
      * @return Option containing a custom css file or None
      */
-    override val customCssPath: Option[Call] = {
-      val path = conf.getString(CustomCssKey).map(securesocial.controllers.routes.Assets.at)
-      logger.debug("[securesocial] custom css path = %s".format(path))
-      path
-    }
+    override val customCssPath: Option[Call] = config.customCSSPath(CustomCssKey)
   }
 
 }

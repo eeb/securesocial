@@ -9,6 +9,8 @@ scalariformSettings
 unmanagedBase := baseDirectory.value / "../module-code/target/scala-2.11/"
 
 libraryDependencies ++= Seq(
+  cache,
+  ws,
   specs2 % "test",
   //"ws.securesocial" %% "securesocial" % version.value,
   "net.codingwell" %% "scala-guice" % "4.0.0",

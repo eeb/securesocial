@@ -1,6 +1,5 @@
-@(loginForm: Form[(String,String)], errorMsg: Option[String] = None)(implicit request: RequestHeader, messages: Messages, env:securesocial.core.RuntimeEnvironment)
+@(loginForm: Form[(String,String)], errorMsg: Option[String] = None)(implicit request: RequestHeader, messages: Messages, env:securesocial.core.RuntimeEnvironment,config: securesocial.core.SecureSocialConfig )
 
-@import securesocial.core.providers.UsernamePasswordProvider.UsernamePassword
 
 @securesocial.views.html.main(Messages("securesocial.login.title")) {
     <div class="page-header">
@@ -26,7 +25,7 @@
     }
 
 
-@defining( env.providers.values.filter( _.id != UsernamePassword) ) { externalProviders =>
+@defining( env.providers.values.filter( _.id != config.UsernamePassword) ) { externalProviders =>
 
         @if( externalProviders.size > 0 ) {
             <div class="clearfix">
@@ -39,7 +38,7 @@
             </div>
         }
 
-        @env.providers.get(UsernamePassword).map { up =>
+        @env.providers.get(config.UsernamePassword).map { up =>
             <div class="clearfix">
                 @if( externalProviders.size > 0 ) {
                     <p>@Messages("securesocial.login.useEmailAndPassword")</p>

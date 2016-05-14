@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,15 +18,13 @@ package securesocial.core
 
 import _root_.java.net.URLEncoder
 import _root_.java.util.UUID
-import javax.inject.Inject
 
-import play.api.Application
+import com.google.inject.Inject
 import play.api.libs.json.{ JsError, JsSuccess, JsValue, Json }
 import play.api.libs.ws.WSResponse
 import play.api.mvc._
 import securesocial.core.services.{ CacheService, HttpService, RoutesService }
 
-import scala.collection.JavaConversions._
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait OAuth2Client {
@@ -61,20 +59,24 @@ object OAuth2Client {
     override def retrieveProfile(profileUrl: String): Future[JsValue] =
       httpService.url(profileUrl).get().map(_.json)
   }
+
 }
+
 /**
  * Base class for all OAuth2 providers
  */
 abstract class OAuth2Provider(
   routesService: RoutesService,
   client: OAuth2Client,
-  cacheService: CacheService)
+  cacheService: CacheService,
+  config: SecureSocialConfig)
     extends IdentityProvider with ApiSupport {
 
   protected implicit val executionContext: ExecutionContext = client.executionContext
   protected val logger = play.api.Logger(this.getClass.getName)
 
   val settings = client.settings
+
   def authMethod = AuthenticationMethod.OAuth2
 
   protected def getAccessToken[A](code: String)(implicit request: Request[A]): Future[OAuth2Info] = {
@@ -99,7 +101,7 @@ abstract class OAuth2Provider(
   }
 
   private[this] def validateOauthState(request: Request[AnyContent]): Future[Boolean] = {
-    val sessId: Option[String] = request.session.get(IdentityProvider.SessionId)
+    val sessId: Option[String] = request.session.get(config.SessionId)
     val stateInQueryString: Option[String] = request.queryString.get(OAuth2Constants.State).flatMap(_.headOption)
     val cacheSessId: Option[Future[Option[String]]] = sessId.map(cacheService.getAs[String](_))
     cacheSessId.fold(Future.successful(false))(_.map(_ == stateInQueryString))
@@ -123,6 +125,7 @@ abstract class OAuth2Provider(
   // check if the state we sent is equal to the one we're receiving now before continuing the flow.
   // todo: review this -> clustered environments
   def authenticate()(implicit request: Request[AnyContent]): Future[AuthenticationResult] = {
+
     val maybeError = request.queryString.get(OAuth2Constants.Error).flatMap(_.headOption).map {
       case OAuth2Constants.AccessDenied => Future.successful(AuthenticationResult.AccessDenied())
       case error =>
@@ -139,7 +142,7 @@ abstract class OAuth2Provider(
         case None =>
           // There's no code in the request, this is the first step in the oauth flow
           val state = UUID.randomUUID().toString
-          val sessionId = request.session.get(IdentityProvider.SessionId).getOrElse(UUID.randomUUID().toString)
+          val sessionId = request.session.get(config.SessionId).getOrElse(UUID.randomUUID().toString)
           cacheService.set(sessionId, state, 300).map {
             unit =>
               var params = List(
@@ -157,7 +160,7 @@ abstract class OAuth2Provider(
                 params.map(p => URLEncoder.encode(p._1, "UTF-8") + "=" + URLEncoder.encode(p._2, "UTF-8")).mkString("?", "&", "")
               logger.debug("[securesocial] authorizationUrl = %s".format(settings.authorizationUrl))
               logger.debug("[securesocial] redirecting to: [%s]".format(url))
-              AuthenticationResult.NavigationFlow(Results.Redirect(url).withSession(request.session + (IdentityProvider.SessionId -> sessionId)))
+              AuthenticationResult.NavigationFlow(Results.Redirect(url).withSession(request.session + (config.SessionId -> sessionId)))
           }
       }
     }
@@ -169,7 +172,7 @@ abstract class OAuth2Provider(
    * Defines the request format for api authentication requests
    *
    * @param email the user email
-   * @param info the OAuth2Info as returned by some Oauth2 service on the client side (eg: JS app)
+   * @param info  the OAuth2Info as returned by some Oauth2 service on the client side (eg: JS app)
    */
   case class LoginJson(email: String, info: OAuth2Info)
 
@@ -224,52 +227,6 @@ abstract class OAuth2Provider(
 case class OAuth2Settings(authorizationUrl: String, accessTokenUrl: String, clientId: String,
   clientSecret: String, scope: Option[String],
   authorizationUrlParams: Map[String, String], accessTokenUrlParams: Map[String, String])
-
-object OAuth2Settings {
-  val AuthorizationUrl = "authorizationUrl"
-  val AccessTokenUrl = "accessTokenUrl"
-  val AuthorizationUrlParams = "authorizationUrlParams"
-  val AccessTokenUrlParams = "accessTokenUrlParams"
-  val ClientId = "clientId"
-  val ClientSecret = "clientSecret"
-  val Scope = "scope"
-  @Inject
-  implicit var application: Application = null
-
-  /**
-   * Helper method to create an OAuth2Settings instance from the properties file.
-   *
-   * @param id the provider id
-   * @return an OAuth2Settings instance
-   */
-  def forProvider(id: String): OAuth2Settings = {
-    import securesocial.core.IdentityProvider.loadProperty
-    val propertyKey = s"securesocial.$id."
-
-    val result = for {
-      authorizationUrl <- loadProperty(id, OAuth2Settings.AuthorizationUrl)
-      accessToken <- loadProperty(id, OAuth2Settings.AccessTokenUrl)
-      clientId <- loadProperty(id, OAuth2Settings.ClientId)
-      clientSecret <- loadProperty(id, OAuth2Settings.ClientSecret)
-    } yield {
-      val config = application.configuration
-      val scope = loadProperty(id, OAuth2Settings.Scope, optional = true)
-      val authorizationUrlParams: Map[String, String] =
-        config.getObject(propertyKey + OAuth2Settings.AuthorizationUrlParams).map { o =>
-          o.unwrapped.toMap.mapValues(_.toString)
-        }.getOrElse(Map())
-
-      val accessTokenUrlParams: Map[String, String] = config.getObject(propertyKey + OAuth2Settings.AccessTokenUrlParams).map { o =>
-        o.unwrapped.toMap.mapValues(_.toString)
-      }.getOrElse(Map())
-      OAuth2Settings(authorizationUrl, accessToken, clientId, clientSecret, scope, authorizationUrlParams, accessTokenUrlParams)
-    }
-    if (!result.isDefined) {
-      IdentityProvider.throwMissingPropertiesException(id)
-    }
-    result.get
-  }
-}
 
 object OAuth2Constants {
   val ClientId = "client_id"

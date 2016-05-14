@@ -17,12 +17,15 @@
 package securesocial.core
 
 import _root_.java.util.UUID
+
 import play.api.libs.oauth._
 import play.api.mvc.{ AnyContent, Request }
 import play.api.mvc.Results.Redirect
 import oauth.signpost.exception.OAuthException
+import play.api.{ Configuration, Environment }
+
 import scala.concurrent.{ ExecutionContext, Future }
-import securesocial.core.services.{ HttpService, RoutesService, CacheService }
+import securesocial.core.services.{ CacheService, HttpService, RoutesService }
 import play.api.libs.oauth.OAuth
 import play.api.libs.oauth.ServiceInfo
 import play.api.libs.oauth.RequestToken
@@ -71,33 +74,6 @@ object OAuth1Client {
 
     override def retrieveProfile(url: String, info: OAuth1Info): Future[JsValue] =
       httpService.url(url).sign(OAuthCalculator(serviceInfo.key, RequestToken(info.token, info.secret))).get().map(_.json)
-  }
-}
-
-object ServiceInfoHelper {
-  import IdentityProvider._
-
-  /**
-   * A helper method to create a service info from the properties file
-   * @param id
-   * @return
-   */
-  def forProvider(id: String): ServiceInfo = {
-    val result = for {
-      requestTokenUrl <- loadProperty(id, OAuth1Provider.RequestTokenUrl);
-      accessTokenUrl <- loadProperty(id, OAuth1Provider.AccessTokenUrl);
-      authorizationUrl <- loadProperty(id, OAuth1Provider.AuthorizationUrl);
-      consumerKey <- loadProperty(id, OAuth1Provider.ConsumerKey);
-      consumerSecret <- loadProperty(id, OAuth1Provider.ConsumerSecret)
-    } yield {
-      ServiceInfo(requestTokenUrl, accessTokenUrl, authorizationUrl, ConsumerKey(consumerKey, consumerSecret))
-    }
-
-    if (result.isEmpty) {
-      throwMissingPropertiesException(id)
-    }
-    result.get
-
   }
 }
 
