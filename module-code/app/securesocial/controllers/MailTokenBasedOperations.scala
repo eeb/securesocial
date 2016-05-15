@@ -25,7 +25,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.mvc.{ RequestHeader, Result }
-import securesocial.core.SecureSocial
+import securesocial.core.{ SecureSocial, SecureSocialConfig }
 import securesocial.core.providers.MailToken
 
 import scala.concurrent.Future
@@ -40,9 +40,9 @@ abstract class MailTokenBasedOperations extends SecureSocial {
   val Email = "email"
   val TokenDurationKey = "securesocial.userpass.tokenDuration"
   val DefaultDuration = 60
-  @Inject
-  implicit var application: Application = null
-  val TokenDuration = application.configuration.getInt(TokenDurationKey).getOrElse(DefaultDuration)
+
+  implicit val config: SecureSocialConfig
+  val TokenDuration = config.configObj.getInt(TokenDurationKey).getOrElse(DefaultDuration)
 
   val startForm = Form(
     Email -> email.verifying(nonEmpty)

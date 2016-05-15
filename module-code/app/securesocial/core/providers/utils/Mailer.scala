@@ -19,12 +19,12 @@ package securesocial.core.providers.utils
 import javax.inject.Inject
 
 import akka.actor.ActorSystem
-import play.api.Application
 import play.api.i18n._
+import play.api.libs.mailer.MailerClient
 import play.api.mvc.RequestHeader
 import play.twirl.api.{ Html, Txt }
 import securesocial.controllers.MailTemplates
-import securesocial.core.BasicProfile
+import securesocial.core.{ BasicProfile, SecureSocialConfig }
 
 /**
  * A helper trait to send email notifications
@@ -42,26 +42,27 @@ trait Mailer {
 
   def sendPasswordChangedNotice(user: BasicProfile)(implicit request: RequestHeader, lang: Lang)
 
-  def sendEmail(subject: String, recipient: String, body: (Option[Txt], Option[Html]))
+  def sendEmail(subject: String, recipient: String, body: (Option[Txt], Option[Html]))(implicit actorSystem: ActorSystem, mailerClient: MailerClient)
 }
 
 object Mailer {
 
   import play.api.libs.mailer._
 
-  @Inject
-  implicit var current: Application = null
-  @Inject
-  implicit var messagesApi: MessagesApi = null
-
   /**
    * The default mailer implementation
    *
    * @param mailTemplates the mail templates
    */
-  class Default(mailTemplates: MailTemplates) extends Mailer {
+  class Default @Inject() (mailTemplates: MailTemplates)(
+    implicit val messagesApi: MessagesApi,
+    val config: SecureSocialConfig,
+    val actorSystem: ActorSystem,
+    val mailerClient: MailerClient)
+      extends Mailer {
+
     private val logger = play.api.Logger("securesocial.core.providers.utils.Mailer.Default")
-    val fromAddress = current.configuration.getString("play.mailer.from").get
+    val fromAddress = config.configObj.getString("play.mailer.from").get
     val AlreadyRegisteredSubject = "mails.sendAlreadyRegisteredEmail.subject"
     val SignUpEmailSubject = "mails.sendSignUpEmail.subject"
     val WelcomeEmailSubject = "mails.welcomeEmail.subject"
@@ -107,7 +108,9 @@ object Mailer {
       sendEmail(messages(PasswordResetOkSubject), user.email.get, txtAndHtml)
     }
 
-    override def sendEmail(subject: String, recipient: String, body: (Option[Txt], Option[Html])) {
+    override def sendEmail(subject: String, recipient: String, body: (Option[Txt], Option[Html]))(
+      implicit actorSystem: ActorSystem,
+      mailerClient: MailerClient) {
       import play.api.libs.concurrent.Execution.Implicits._
 
       import scala.concurrent.duration._
@@ -115,14 +118,9 @@ object Mailer {
       logger.debug(s"[securesocial] sending email to $recipient")
       logger.debug(s"[securesocial] mail = [$body]")
 
-      @Inject
-      implicit var actorSystem: ActorSystem = null
-      @Inject
-      implicit var MailerPlugin: MailerClient = null
-
       actorSystem.scheduler.scheduleOnce(1.seconds) {
         val mail = Email(subject, fromAddress, Seq(recipient), body._1.map(txt => txt.body), body._2.map(html => html.body))
-        MailerPlugin.send(mail)
+        mailerClient.send(mail)
       }
     }
   }

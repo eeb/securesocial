@@ -17,21 +17,25 @@ package service
  *
  */
 
+import akka.actor.ActorSystem
 import com.google.inject.Inject
 import controllers.CustomRoutesService
 import play.api.cache.CacheApi
 import play.api.i18n.MessagesApi
+import play.api.libs.mailer.MailerClient
 import play.api.libs.ws.WSClient
 import securesocial.core.{ RuntimeEnvironment, SecureSocialConfig }
 
 import scala.concurrent.ExecutionContext
 
 class MyEnvironment @Inject() (
-    override implicit val executionContext: ExecutionContext,
-    implicit val messagesApi: MessagesApi,
-    override implicit val config: SecureSocialConfig,
-    override implicit val cache: CacheApi,
-    override implicit val ws: WSClient) extends RuntimeEnvironment.Default {
+    implicit override val executionContext: ExecutionContext,
+    val messagesApi: MessagesApi,
+    override val config: SecureSocialConfig,
+    override val cache: CacheApi,
+    override val ws: WSClient,
+    override val actorSystem: ActorSystem,
+    override val mailerClient: MailerClient) extends RuntimeEnvironment.Default {
 
   override type U = DemoUser
   override lazy val routes = new CustomRoutesService()

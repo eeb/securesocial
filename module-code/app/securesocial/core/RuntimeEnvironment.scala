@@ -1,8 +1,10 @@
 package securesocial.core
 
+import akka.actor.ActorSystem
 import play.api.cache.CacheApi
 import play.api.i18n.MessagesApi
 import play.api.libs.concurrent.{ Execution => PlayExecution }
+import play.api.libs.mailer.MailerClient
 import play.api.libs.ws.WSClient
 import securesocial.controllers.{ MailTemplates, ViewTemplates }
 import securesocial.core.authenticator._
@@ -55,6 +57,8 @@ trait RuntimeEnvironment {
   implicit val cache: CacheApi
   implicit val messagesApi: MessagesApi
   implicit val ws: WSClient
+  implicit val actorSystem: ActorSystem
+  implicit val mailerClient: MailerClient
 }
 
 object RuntimeEnvironment {

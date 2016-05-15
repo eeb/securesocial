@@ -35,12 +35,12 @@ import scala.concurrent.{ ExecutionContext, Future }
  * @param env an environment
  */
 class PasswordReset @Inject() (
-  override implicit val env: RuntimeEnvironment,
-  override val messagesApi: MessagesApi,
-  override val executionContext: ExecutionContext,
-  implicit val config: SecureSocialConfig,
-  implicit val CSRFAddToken: CSRFAddToken,
-  implicit val CSRFCheck: CSRFCheck) extends BasePasswordReset
+  implicit val env: RuntimeEnvironment,
+  val messagesApi: MessagesApi,
+  val executionContext: ExecutionContext,
+  val config: SecureSocialConfig,
+  val CSRFAddToken: CSRFAddToken,
+  val CSRFCheck: CSRFCheck) extends BasePasswordReset
 
 /**
  * The trait that provides the Password Reset functionality
